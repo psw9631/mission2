@@ -1,6 +1,11 @@
 from default_quizzes import DEFAULT_QUIZZES
 from quiz import Quiz
 
+class QuizGame:
+    def __init__(self):
+        self.quizzes = DEFAULT_QUIZZES.copy()
+        self.best_score = None
+
 def show_menu():
     print("\n=== 나만의 퀴즈 게임 ===")
     print("1. 퀴즈 풀기")
@@ -62,9 +67,8 @@ def show_quiz_list(quizzes):
         print(f"{number}. {quiz.question}")
 
 def main():
-    quizzes = DEFAULT_QUIZZES.copy()
-    best_score = None
-
+    game = QuizGame()
+    
     while True:
         show_menu()
         choice = input("선택: ").strip()
@@ -74,13 +78,13 @@ def main():
             break
         
         elif choice == "1":
-            if not quizzes:
+            if not game.quizzes:
                 print("등록된 퀴즈가 없습니다.")
                 continue
             
             correct_count = 0
 
-            for number, quiz in enumerate(quizzes, start=1):
+            for number, quiz in enumerate(game.quizzes, start=1):
                 print(f"\n[문제 {number}]")
                 quiz.display()
                 answer = read_answer()
@@ -91,21 +95,21 @@ def main():
                 else:
                     print("오답입니다.")
 
-            total = len(quizzes)
+            total = len(game.quizzes)
             print(f"\n결과: {total}문제 중 {correct_count}문제를 맞혔어요!")
-            if best_score is None or correct_count > best_score:
-                best_score = correct_count
+            if game.best_score is None or correct_count > best_score:
+                game.best_score = correct_count
                 print("새로운 최고 기록입니다!")
 
         elif choice == "2":
-            add_quiz(quizzes)
+            add_quiz(game.quizzes)
         elif choice == "3":
-            show_quiz_list(quizzes)
+            show_quiz_list(game.quizzes)
         elif choice == "4":
-            if best_score is None:
+            if game.best_score is None:
                 print("아직 퀴즈를 푼 기록이 없습니다.")
             else:
-                print(f"최고 기록: {best_score}문제 정답")
+                print(f"최고 기록: {game.best_score}문제 정답")
         else:
             print("1~5 사이의 숫자를 입력하세요.")
 
