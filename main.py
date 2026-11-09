@@ -1,4 +1,5 @@
 from default_quizzes import DEFAULT_QUIZZES
+from quiz import Quiz
 
 def show_menu():
     print("\n=== 나만의 퀴즈 게임 ===")
@@ -23,7 +24,36 @@ def read_answer():
 
         print("1~4 사이의 숫자를 입력하세요.")
 
+def add_quiz(quizzes):
+    while True:
+        question = input("새 문제를 입력하세요: ").strip()
+
+        if question:
+            break
+
+        print("문제를 한 글자 이상 입력하세요.")
+
+    choices = []
+
+    for number in range(1, 5):
+        while True:
+            choice = input(f"선택지 {number}: ").strip()
+
+            if choice:
+                choices.append(choice)
+                break
+
+            print("선택지를 한 글자 이상 입력하세요.")
+
+    answer = read_answer()
+    quiz = Quiz(question, choices, answer)
+
+    quizzes.append(quiz)
+    print("퀴즈가 추가되었습니다!")
+
 def main():
+    quizzes = DEFAULT_QUIZZES.copy()
+
     while True:
         show_menu()
         choice = input("선택: ").strip()
@@ -33,13 +63,13 @@ def main():
             break
         
         elif choice == "1":
-            if not DEFAULT_QUIZZES:
+            if not quizzes:
                 print("등록된 퀴즈가 없습니다.")
                 continue
             
             correct_count = 0
 
-            for number, quiz in enumerate(DEFAULT_QUIZZES, start=1):
+            for number, quiz in enumerate(quizzes, start=1):
                 print(f"\n[문제 {number}]")
                 quiz.display()
                 answer = read_answer()
@@ -50,10 +80,12 @@ def main():
                 else:
                     print("오답입니다.")
 
-            total = len(DEFAULT_QUIZZES)
+            total = len(quizzes)
             print(f"\n결과: {total}문제 중 {correct_count}문제를 맞혔어요!")
 
-        elif choice in ("2", "3", "4"):
+        elif choice == "2":
+            add_quiz(quizzes)
+        elif choice in ("3", "4"):
             print("준비 중인 기능입니다.")
         else:
             print("1~5 사이의 숫자를 입력하세요.")
