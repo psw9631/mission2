@@ -51,6 +51,16 @@ def add_quiz(quizzes):
     quizzes.append(quiz)
     print("퀴즈가 추가되었습니다!")
 
+def show_quiz_list(quizzes):
+    if not quizzes:
+        print("등록된 퀴즈가 없습니다.")
+        return
+
+    print(f"\n등록된 퀴즈 목록 (총 {len(quizzes)}개)")
+
+    for number, quiz in enumerate(quizzes, start=1):
+        print(f"{number}. {quiz.question}")
+
 def main():
     quizzes = DEFAULT_QUIZZES.copy()
 
@@ -85,7 +95,9 @@ def main():
 
         elif choice == "2":
             add_quiz(quizzes)
-        elif choice in ("3", "4"):
+        elif choice == "3":
+            show_quiz_list(quizzes)
+        elif choice == "4":
             print("준비 중인 기능입니다.")
         else:
             print("1~5 사이의 숫자를 입력하세요.")
