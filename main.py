@@ -1,3 +1,4 @@
+import random
 import json
 from pathlib import Path
 from default_quizzes import DEFAULT_QUIZZES
@@ -24,7 +25,10 @@ class QuizGame:
 
         correct_count = 0
 
-        for number, quiz in enumerate(self.quizzes, start=1):
+        round_quizzes = self.quizzes.copy()
+        random.shuffle(round_quizzes)
+
+        for number, quiz in enumerate(round_quizzes, start=1):
             print(f"\n[문제 {number}]")
             quiz.display()
             answer = read_answer()
@@ -35,7 +39,7 @@ class QuizGame:
             else:
                 print("오답입니다.")
 
-        total = len(self.quizzes)
+        total = len(round_quizzes)
         print(f"\n결과: {total}문제 중 {correct_count}문제를 맞혔어요!")
 
         if self.best_score is None or correct_count > self.best_score:
