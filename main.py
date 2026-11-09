@@ -25,8 +25,9 @@ class QuizGame:
 
         correct_count = 0
 
-        round_quizzes = self.quizzes.copy()
-        random.shuffle(round_quizzes)
+        available = len(self.quizzes)
+        question_count = read_number(f"몇 문제를 풀까요? (1~{available}): ", 1, available)
+        round_quizzes = random.sample(self.quizzes, question_count)
 
         for number, quiz in enumerate(round_quizzes, start=1):
             print(f"\n[문제 {number}]")
@@ -160,20 +161,24 @@ class QuizGame:
         self.quizzes = quizzes
         self.best_score = best_score
 
-def read_answer():
+def read_number(prompt, minimum, maximum):
     while True:
-        text = input("정답 번호 (1~4): ").strip()
+        text = input(prompt).strip()
 
         try:
-            answer = int(text)
+            number = int(text)
         except ValueError:
-            print("1~4 사이의 숫자를 입력하세요.")
+            print(f"{minimum}~{maximum} 사이의 숫자를 입력하세요.")
             continue
 
-        if 1 <= answer <= 4:
-            return answer
+        if minimum <= number <= maximum:
+            return number
 
-        print("1~4 사이의 숫자를 입력하세요.")
+        print(f"{minimum}~{maximum} 사이의 숫자를 입력하세요.")
+
+
+def read_answer():
+    return read_number("정답 번호 (1~4): ", 1, 4)
 
 def main():
     game = QuizGame()
