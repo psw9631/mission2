@@ -54,3 +54,13 @@ mission2/
 └── README.md           # 프로젝트 안내
 ```
 복제한 폴더에서 게임을 실행하면 그 폴더에 별도의 `state.json`이 생성됩니다.
+
+## 제출 증빙 · GitHub 커밋과 브랜치 병합
+
+- **평가 #5 · GitHub 업로드 및 커밋 10개 이상**  
+  프로젝트를 GitHub의 `main` 브랜치에 업로드했습니다. [전체 커밋 기록](https://github.com/psw9631/mission2/commits/main/)과 아래 그래프에서 커밋 이력을 확인할 수 있습니다.
+- **평가 #6 · 브랜치 생성 및 병합**  
+  `feature/play-quiz` 브랜치에서 퀴즈 풀기 기능을 구현한 뒤 `main`에 병합했습니다. 아래 그래프에 작업 커밋 `890cf2c`와 병합 커밋 `08731e5`가 표시됩니다.
+
+![커밋 10개 이상과 feature/play-quiz 브랜치의 main 병합을 보여주는 Git 그래프](docs/screenshots/06-git-log-graph.png)
+
