@@ -47,3 +47,4 @@ mission2/
 ├── .gitignore          # Git에서 제외할 파일과 폴더
 └── README.md           # 프로젝트 안내
 ```
+복제한 폴더에서 게임을 실행하면 그 폴더에 별도의 `state.json`이 생성됩니다.
