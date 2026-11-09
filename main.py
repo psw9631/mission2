@@ -1,5 +1,6 @@
 import random
 import json
+from datetime import datetime
 from pathlib import Path
 from default_quizzes import DEFAULT_QUIZZES
 from quiz import Quiz
@@ -8,6 +9,7 @@ class QuizGame:
     def __init__(self):
         self.quizzes = DEFAULT_QUIZZES.copy()
         self.best_score = None
+        self.history = []
         self.load_state()
 
     def show_menu(self):
@@ -17,7 +19,8 @@ class QuizGame:
         print("3. 퀴즈 목록")
         print("4. 점수 확인")
         print("5. 퀴즈 삭제")
-        print("6. 종료")
+        print("6. 점수 히스토리")
+        print("7. 종료")
 
     def play_quiz(self):
         if not self.quizzes:
@@ -48,11 +51,17 @@ class QuizGame:
 
         total = len(round_quizzes)
         print(f"\n결과: {total}문제 중 {correct_count}문제 정답 ({score}점)")
+        self.history.append({
+            "played_at": datetime.now().astimezone().isoformat(timespec="seconds"),
+            "question_count": total,
+            "score": score,
+        })
 
         if self.best_score is None or score > self.best_score:
             self.best_score = score
-            self.save_state()
             print("새로운 최고 기록입니다!")
+
+        self.save_state()
 
     def add_quiz(self):
         while True:
@@ -119,6 +128,19 @@ class QuizGame:
         else:
             print(f"최고 기록: {self.best_score}점")
 
+    def show_history(self):
+        if not self.history:
+            print("아직 플레이 기록이 없습니다.")
+            return
+
+        print("\n=== 점수 히스토리 (최근 기록부터) ===")
+        for record in reversed(self.history):
+            played_at = datetime.fromisoformat(record["played_at"])
+            date_text = played_at.strftime("%Y-%m-%d %H:%M:%S")
+            question_count = record["question_count"]
+            score = record["score"]
+            print(f"{date_text} | 푼 문제 {question_count}개 | {score}점")
+
     def save_state(self):
         quiz_data = []
 
@@ -133,6 +155,7 @@ class QuizGame:
         state = {
             "quizzes": quiz_data,
             "best_score": self.best_score,
+            "history": self.history,
         }
 
         state_path = Path(__file__).resolve().with_name("state.json")
@@ -193,10 +216,25 @@ class QuizGame:
                 quizzes.append(Quiz(question, choices, answer, hint=hint))
 
             best_score = state["best_score"]
+
             if best_score is not None:
                 if type(best_score) is not int or best_score < 0:
                     raise ValueError("최고 점수는 0 이상의 정수여야 합니다.")
-                
+            history = state.get("history", [])
+            if not isinstance(history, list):
+                raise ValueError("플레이 기록은 리스트여야 합니다.")
+
+            for record in history:
+                datetime.fromisoformat(record["played_at"])
+                question_count = record["question_count"]
+                score = record["score"]
+
+                if type(question_count) is not int or question_count < 1:
+                    raise ValueError("푼 문제 수는 1 이상의 정수여야 합니다.")
+
+                if type(score) is not int or not 0 <= score <= question_count:
+                    raise ValueError("점수는 0부터 푼 문제 수 사이여야 합니다.")
+                                
         except FileNotFoundError:
             return
         except (OSError, ValueError, KeyError, TypeError):
@@ -205,6 +243,8 @@ class QuizGame:
 
         self.quizzes = quizzes
         self.best_score = best_score
+        self.history = history
+        
         if hints_added:
             self.save_state()
 
@@ -258,7 +298,7 @@ def main():
         game.show_menu()
         choice = input("선택: ").strip()
 
-        if choice == "6":
+        if choice == "7":
             print("게임을 종료합니다.")
             break
         
@@ -272,8 +312,10 @@ def main():
             game.show_best_score()
         elif choice == "5":
             game.delete_quiz()
+        elif choice == "6":
+            game.show_history()
         else:
-            print("1~6 사이의 숫자를 입력하세요.")
+            print("1~7 사이의 숫자를 입력하세요.")
 
 
 if __name__ == "__main__":
