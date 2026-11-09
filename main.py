@@ -24,6 +24,7 @@ class QuizGame:
             return
 
         correct_count = 0
+        score = 0
 
         available = len(self.quizzes)
         question_count = read_number(f"몇 문제를 풀까요? (1~{available}): ", 1, available)
@@ -32,19 +33,23 @@ class QuizGame:
         for number, quiz in enumerate(round_quizzes, start=1):
             print(f"\n[문제 {number}]")
             quiz.display()
-            answer = read_answer()
+            answer, hint_used = read_quiz_answer(quiz)
 
             if quiz.is_correct(answer):
                 correct_count += 1
-                print("정답입니다!")
+                if hint_used:
+                    print("정답입니다! 힌트를 사용해서 이 문제는 0점입니다.")
+                else:
+                    score += 1
+                    print("정답입니다!")
             else:
                 print("오답입니다.")
 
         total = len(round_quizzes)
-        print(f"\n결과: {total}문제 중 {correct_count}문제를 맞혔어요!")
+        print(f"\n결과: {total}문제 중 {correct_count}문제 정답 ({score}점)")
 
-        if self.best_score is None or correct_count > self.best_score:
-            self.best_score = correct_count
+        if self.best_score is None or score > self.best_score:
+            self.best_score = score
             self.save_state()
             print("새로운 최고 기록입니다!")
 
@@ -90,7 +95,7 @@ class QuizGame:
         if self.best_score is None:
             print("아직 퀴즈를 푼 기록이 없습니다.")
         else:
-            print(f"최고 기록: {self.best_score}문제 정답")
+            print(f"최고 기록: {self.best_score}점")
 
     def save_state(self):
         quiz_data = []
@@ -100,6 +105,7 @@ class QuizGame:
                 "question": quiz.question,
                 "choices": quiz.choices,
                 "answer": quiz.answer,
+                "hint": quiz.hint,
             })
 
         state = {
@@ -127,6 +133,7 @@ class QuizGame:
                 raise ValueError("퀴즈 목록은 리스트여야 합니다.")
 
             quizzes = []
+            hints_added = False
             for item in quiz_items:
                 question = item["question"]
                 choices = item["choices"]
@@ -145,7 +152,23 @@ class QuizGame:
                 if type(answer) is not int or not 1 <= answer <= 4:
                     raise ValueError("정답 번호는 1~4 사이의 정수여야 합니다.")
 
-                quizzes.append(Quiz(question, choices, answer))
+                hint = item.get("hint")
+                if hint is not None and not isinstance(hint, str):
+                    raise ValueError("힌트는 문자열이어야 합니다.")
+
+                if "hint" not in item:
+                    for default_quiz in DEFAULT_QUIZZES:
+                        if (
+                            question == default_quiz.question
+                            and choices == default_quiz.choices
+                            and answer == default_quiz.answer
+                        ):
+                            hint = default_quiz.hint
+                            if hint is not None:
+                                hints_added = True
+                            break
+
+                quizzes.append(Quiz(question, choices, answer, hint=hint))
 
             best_score = state["best_score"]
             if best_score is not None:
@@ -160,6 +183,8 @@ class QuizGame:
 
         self.quizzes = quizzes
         self.best_score = best_score
+        if hints_added:
+            self.save_state()
 
 def read_number(prompt, minimum, maximum):
     while True:
@@ -179,6 +204,30 @@ def read_number(prompt, minimum, maximum):
 
 def read_answer():
     return read_number("정답 번호 (1~4): ", 1, 4)
+
+def read_quiz_answer(quiz):
+    hint_used = False
+    while True:
+        text = input("정답 번호 (1~4, 힌트는 h): ").strip().lower()
+
+        if text == "h":
+            if quiz.hint:
+                print(f"힌트: {quiz.hint}")
+                hint_used = True
+            else:
+                print("이 문제에는 힌트가 없습니다.")
+            continue
+
+        try:
+            answer = int(text)
+        except ValueError:
+            print("1~4 사이의 숫자 또는 h를 입력하세요.")
+            continue
+
+        if 1 <= answer <= 4:
+            return answer, hint_used
+
+        print("1~4 사이의 숫자 또는 h를 입력하세요.")
 
 def main():
     game = QuizGame()
