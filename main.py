@@ -16,7 +16,8 @@ class QuizGame:
         print("2. 퀴즈 추가")
         print("3. 퀴즈 목록")
         print("4. 점수 확인")
-        print("5. 종료")
+        print("5. 퀴즈 삭제")
+        print("6. 종료")
 
     def play_quiz(self):
         if not self.quizzes:
@@ -90,6 +91,27 @@ class QuizGame:
 
         for number, quiz in enumerate(self.quizzes, start=1):
             print(f"{number}. {quiz.question}")
+
+    def delete_quiz(self):
+        if not self.quizzes:
+            print("삭제할 퀴즈가 없습니다.")
+            return
+
+        self.show_quiz_list()
+        number = read_number(
+            "삭제할 문제 번호를 입력하세요 (0은 취소): ",
+            0,
+            len(self.quizzes),
+        )
+
+        if number == 0:
+            print("삭제를 취소했습니다.")
+            return
+
+        removed_quiz = self.quizzes.pop(number - 1)
+        self.save_state()
+        print(f"삭제한 문제: {removed_quiz.question}")
+        print("퀴즈가 삭제되었습니다.")
 
     def show_best_score(self):
         if self.best_score is None:
@@ -236,7 +258,7 @@ def main():
         game.show_menu()
         choice = input("선택: ").strip()
 
-        if choice == "5":
+        if choice == "6":
             print("게임을 종료합니다.")
             break
         
@@ -248,8 +270,10 @@ def main():
             game.show_quiz_list()
         elif choice == "4":
             game.show_best_score()
+        elif choice == "5":
+            game.delete_quiz()
         else:
-            print("1~5 사이의 숫자를 입력하세요.")
+            print("1~6 사이의 숫자를 입력하세요.")
 
 
 if __name__ == "__main__":
