@@ -64,3 +64,7 @@ mission2/
 
 ![커밋 10개 이상과 feature/play-quiz 브랜치의 main 병합을 보여주는 Git 그래프](docs/screenshots/06-git-log-graph.png)
 
+## 제출 증빙 · #7 clone과 pull 실습
+
+GitHub의 `mission2` 저장소를 별도 폴더인 `mission2-clone`에 `git clone`으로 복제했습니다. 복제본에서 README를 수정한 커밋 `ab41ed0`을 GitHub에 푸시한 뒤, 원본 `mission2` 폴더에서 `git pull`을 실행해 같은 커밋과 README 변경이 반영된 것을 확인했습니다.
+
