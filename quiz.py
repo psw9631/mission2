@@ -6,3 +6,9 @@ class Quiz:
 
     def is_correct(self, selected):
         return selected == self.answer
+
+    def display(self):
+        print(self.question)
+
+        for number, choice in enumerate(self.choices, start=1):
+            print(f"{number}. {choice}")    
