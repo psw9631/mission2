@@ -63,6 +63,7 @@ def show_quiz_list(quizzes):
 
 def main():
     quizzes = DEFAULT_QUIZZES.copy()
+    best_score = None
 
     while True:
         show_menu()
@@ -92,13 +93,19 @@ def main():
 
             total = len(quizzes)
             print(f"\n결과: {total}문제 중 {correct_count}문제를 맞혔어요!")
+            if best_score is None or correct_count > best_score:
+                best_score = correct_count
+                print("새로운 최고 기록입니다!")
 
         elif choice == "2":
             add_quiz(quizzes)
         elif choice == "3":
             show_quiz_list(quizzes)
         elif choice == "4":
-            print("준비 중인 기능입니다.")
+            if best_score is None:
+                print("아직 퀴즈를 푼 기록이 없습니다.")
+            else:
+                print(f"최고 기록: {best_score}문제 정답")
         else:
             print("1~5 사이의 숫자를 입력하세요.")
 
