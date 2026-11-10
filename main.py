@@ -91,7 +91,10 @@ class QuizGame:
         quiz = Quiz(question, choices, answer)
 
         self.quizzes.append(quiz)
-        self.save_state()
+        if not self.save_state():
+            self.quizzes.pop()
+            return
+
         print("퀴즈가 추가되었습니다!")
 
     def show_quiz_list(self):
@@ -121,7 +124,10 @@ class QuizGame:
             return
 
         removed_quiz = self.quizzes.pop(number - 1)
-        self.save_state()
+        if not self.save_state():
+            self.quizzes.insert(number - 1, removed_quiz)
+            return
+
         print(f"삭제한 문제: {removed_quiz.question}")
         print("퀴즈가 삭제되었습니다.")
 
@@ -189,6 +195,9 @@ class QuizGame:
                 self._last_saved_text = state_text
         except OSError as error:
             print(f"저장하지 못했습니다. {error}")
+            return False
+
+        return True
 
     def load_state(self):
         state_path = Path(__file__).resolve().with_name("state.json")
