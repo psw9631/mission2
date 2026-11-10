@@ -1,7 +1,9 @@
 import random
 import json
+import os
 from datetime import datetime
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from default_quizzes import DEFAULT_QUIZZES
 from quiz import Quiz
 
@@ -10,6 +12,7 @@ class QuizGame:
         self.quizzes = DEFAULT_QUIZZES.copy()
         self.best_score = None
         self.history = []
+        self._last_saved_text = None
         self.load_state()
 
     def show_menu(self):
@@ -161,17 +164,51 @@ class QuizGame:
         state_path = Path(__file__).resolve().with_name("state.json")
 
         try:
-            with state_path.open("w", encoding="utf-8") as file:
-                json.dump(state, file, ensure_ascii=False, indent=4)
+            state_text = json.dumps(state, ensure_ascii=False, indent=4)
+
+            with TemporaryDirectory(prefix=".state-", dir=state_path.parent) as temp_dir:
+                temp_path = Path(temp_dir) / "state.json"
+
+                with temp_path.open("w", encoding="utf-8") as file:
+                    file.write(state_text)
+                    file.flush()
+                    os.fsync(file.fileno())
+
+                if self._last_saved_text is not None:
+                    backup_path = state_path.with_name("state.json.bak")
+                    temp_backup_path = Path(temp_dir) / "state.json.bak"
+
+                    with temp_backup_path.open("w", encoding="utf-8") as file:
+                        file.write(self._last_saved_text)
+                        file.flush()
+                        os.fsync(file.fileno())
+
+                    temp_backup_path.replace(backup_path)
+
+                temp_path.replace(state_path)
+                self._last_saved_text = state_text
         except OSError as error:
             print(f"저장하지 못했습니다. {error}")
 
     def load_state(self):
         state_path = Path(__file__).resolve().with_name("state.json")
+        original_loaded = self._load_state_file(state_path)
+        if original_loaded:
+            return
+
+        backup_path = state_path.with_name("state.json.bak")
+        backup_loaded = self._load_state_file(backup_path)
+        if backup_loaded:
+            print("원본 저장 파일을 불러올 수 없어 백업에서 시작합니다.")
+        elif original_loaded is False or backup_loaded is False:
+            print("저장 파일을 불러올 수 없어 기본 문제로 시작합니다.")
+
+    def _load_state_file(self, state_path):
 
         try:
             with state_path.open("r", encoding="utf-8") as file:
-                state = json.load(file)
+                saved_text = file.read()
+                state = json.loads(saved_text)
 
             quiz_items = state["quizzes"]
             if not isinstance(quiz_items, list):
@@ -236,17 +273,19 @@ class QuizGame:
                     raise ValueError("점수는 0부터 푼 문제 수 사이여야 합니다.")
                                 
         except FileNotFoundError:
-            return
+            return None
         except (OSError, ValueError, KeyError, TypeError):
-            print("저장 파일을 불러올 수 없어 기본 문제로 시작합니다.")
-            return
+            return False
 
         self.quizzes = quizzes
         self.best_score = best_score
         self.history = history
-        
-        if hints_added:
+        self._last_saved_text = saved_text
+
+        if hints_added and state_path.name == "state.json":
             self.save_state()
+
+        return True
 
 def read_number(prompt, minimum, maximum):
     while True:
